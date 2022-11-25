@@ -40,7 +40,7 @@ const requestCameraPermission = async () => {
 
 const HomeScreen = () => {
   const [link, setLink] = useState([]);
-  // console.log('linkk --- - - - -', link[2].node.image.uri);
+  // console.log('linkk --- - - - -', link)
   async function getPermission() {
     try {
       PermissionsAndroid.request(
@@ -57,73 +57,62 @@ const HomeScreen = () => {
   }, []);
   async function getPics() {
     const data = await CameraRoll.getPhotos({
-      first: 50,
+      first: 100,
       assetType: 'Photos',
+      include: ['filename'],
     });
+    // console.log('data - ', data);
     const uri = data.edges;
-    setLink(uri);
-    // const result = await TextRecognition.recognize(uri);
-
-    // console.log('Recognized text:', result.text);
-
-    // for (let block of result.blocks) {
-    //   console.log('Block text:', block.text);
-    //   console.log('Block frame:', block.frame);
-
-    //   for (let line of block.lines) {
-    //     console.log('Line text:', line.text);
-    //     console.log('Line frame:', line.frame);
-    //   }
-    // }
+    // setLink(uri);
+    console.log('uri -- ', uri[0]);
+    let tempArray = [];
+    for (let i = 0; i < uri.length; i++) {
+      tempArray.push(uri[i]);
+      console.log(uri[i].node.image.uri);
+      const tempUri = uri[i].node.image.uri;
+      getText(tempUri);
+    }
+    // console.log('temp arr -- - - --', tempArray);
+    setLink(tempArray);
   }
 
   useEffect(() => {
     getPics();
   }, []);
 
+  async function getText(pic) {
+    // console.log('passed uri - ', pic);
+    // const result = await TextRecognition.recognize(pic);
+    TextRecognition.recognize(pic).then(val => {
+      console.log(val.text);
+    });
+  }
+
   const width = Dimensions.get('window').width;
   return (
     <View>
-      <Text>HomeScreen</Text>
-      <Button title="ocr" onPress={getPics} />
+      {/* <Text>HomeScreen</Text> */}
+      {/* <Button title="ocr" onPress={getPics} /> */}
       <View style={{width: width, height: 600}}>
         <FlashList
           data={link}
           renderItem={item => {
             const photo = item.item.node.image.uri;
-            console.log(photo);
-            async function dim() {
-              console.log(
-                await Image.getSize(
-                  photo,
-                  res => {
-                    console.log('success', res);
-                  },
-                  e => {
-                    console.log('error', e);
-                  },
-                ),
-              );
-            }
-            dim();
-            async function getText({photo}) {
-              console.log('passed uri - ', photo);
-              const result = await TextRecognition.recognize(photo);
-              console.log('recognised Text - \n', result);
-            }
             // getText(photo);
             return (
-              <View style={{width: width}}>
-                <Image
-                  source={{uri: photo}}
-                  style={{height: 300, width: width, alignSelf: 'stretch'}}
-                />
-                <Text>test</Text>
-              </View>
+              <>
+                {photo && (
+                  <Image
+                    source={{uri: photo}}
+                    style={{height: 300, width: width, resizeMode:'contain'}}
+                    // blurRadius={10}
+                  />
+                )}
+              </>
             );
           }}
-          key={new Date() + Math.random}
-          estimatedItemSize={118}
+          key={new Date() + Math.random * 100}
+          estimatedItemSize={100}
         />
       </View>
     </View>
