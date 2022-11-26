@@ -12,6 +12,7 @@ import React, {useEffect, useState} from 'react';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import {FlashList} from '@shopify/flash-list';
+import RNFS from 'react-native-fs';
 
 const requestCameraPermission = async () => {
   try {
@@ -41,8 +42,37 @@ const requestCameraPermission = async () => {
 const HomeScreen = () => {
   const [link, setLink] = useState([]);
   const [searchData, setSearchData] = useState([]);
-  // console.log('linkk --- - - - -', link)
-  console.log('searchData ---------------', searchData);
+
+  // console.log(link);
+
+  //RNFS TESTS
+  /* RNFS.readDir(RNFS.ExternalStorageDirectoryPath) // On Android, use "RNFS.DocumentDirectoryPath" (MainBundlePath is not defined)
+    .then(result => {
+      console.log('GOT RESULT', result);
+
+      // stat the first file
+      return Promise.all([RNFS.stat(result[0].path), result[0].path]);
+    })
+    .then(statResult => {
+      if (statResult[0].isFile()) {
+        // if we have a file, read it
+        return RNFS.readFile(statResult[1], 'utf8');
+      }
+
+      return 'no file';
+    })
+    .then(contents => {
+      // log the file contents
+      console.log(contents);
+    })
+    .catch(err => {
+      console.log(err.message, err.code);
+    }); */
+
+  // RNFS.readDir('/storage/emulated/0/Pictures/Screenshots');
+
+  //RNFS TESTS
+
   async function getPermission() {
     try {
       PermissionsAndroid.request(
@@ -57,45 +87,43 @@ const HomeScreen = () => {
     // requestCameraPermission();
     // getPermission();
   }, []);
-  async function getPics() {
+  async function getData() {
+    const data = await CameraRoll.getPhotos({
+      first: 1,
+      assetType: 'Photos',
+      include: ['filename'],
+    });
+    const uri = data.edges;
+    let searchDataArray = [];
+    for (let i = 0; i < uri.length; i++) {
+      const tempUri = uri[i].node.image.uri;
+
+      const tst = await TextRecognition.recognize(tempUri);
+
+      searchDataArray.push({uri: uri[i].node.image.uri, data: tst.text, id: i});
+    }
+
+    setSearchData(searchDataArray);
+  }
+
+  async function showPics() {
     const data = await CameraRoll.getPhotos({
       first: 100,
       assetType: 'Photos',
       include: ['filename'],
     });
-    // console.log('data - ', data);
     const uri = data.edges;
-    // setLink(uri);
-    // console.log('uri -- ', uri[0]);
     let tempArray = [];
-    let searchDataArray = [];
     for (let i = 0; i < uri.length; i++) {
       tempArray.push(uri[i]);
-      // console.log(uri[i].node.image.uri);
-      const tempUri = uri[i].node.image.uri;
-      // let textData;
-      const tst = await TextRecognition.recognize(tempUri);
-      // await getText(tempUri);
-      // console.log(tst.text);
-      searchDataArray.push({uri: uri[i].node.image.uri, data: tst.text, id: i});
-      // console.log(searchDataArray);
     }
-    // console.log('temp arr -- - - --', tempArray);
     setLink(tempArray);
-    setSearchData(searchDataArray);
   }
 
   useEffect(() => {
-    getPics();
+    getData();
+    showPics();
   }, []);
-
-  async function getText(pic) {
-    // console.log('passed uri - ', pic);
-    // const result = await TextRecognition.recognize(pic);
-    const txt = await TextRecognition.recognize(pic);
-    // console.log('txt = ', txt);
-    return txt;
-  }
 
   const width = Dimensions.get('window').width;
   return (
@@ -107,6 +135,7 @@ const HomeScreen = () => {
           data={link}
           renderItem={item => {
             const photo = item.item.node.image.uri;
+            console.log(photo)
             // getText(photo);
             return (
               <>
