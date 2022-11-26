@@ -48,7 +48,7 @@ const HomeScreen = () => {
   const [searchData, setSearchData] = useState([]);
   const [oldSearchData, setOldSearchData] = useState([]);
 
-  console.log(searchData);
+  // console.log(searchData);
 
   async function getPermission() {
     try {
@@ -83,9 +83,10 @@ const HomeScreen = () => {
         });
       }
     }
-
+    setLink(searchDataArray);
     setSearchData(searchDataArray);
     setOldSearchData(searchDataArray);
+    console.log('photos indexed');
   }
 
   async function showPics() {
@@ -105,15 +106,25 @@ const HomeScreen = () => {
   }
 
   const onSearch = text => {
-    let searchResults = searchData.filter(item => {
-      return item.data.toLowerCase().indexOf(text.toLowerCase()) > -1;
-    });
-    setSearchData(searchResults);
+    if (text === ' ') {
+      setSearchData(oldSearchData);
+    } else {
+      let resultLink = [];
+      let searchResults = searchData.filter(item => {
+        console.log('item data === ', item.data.includes(text));
+        if (item.data.toLowerCase().includes(text.toLowerCase())) {
+          console.log(item.uri);
+          return item.uri;
+        }
+      });
+      // setSearchData(searchResults);
+      setLink(searchResults);
+    }
   };
 
   useEffect(() => {
     getData();
-    showPics();
+    // showPics();
   }, []);
 
   return (
@@ -124,7 +135,8 @@ const HomeScreen = () => {
           <FlashList
             data={link}
             renderItem={item => {
-              var photo = item.item.node.image.uri;
+              // console.log(item.item.uri);
+              var photo = item.item.uri;
               return (
                 <View style={styles.itemView}>
                   <TouchableOpacity>
