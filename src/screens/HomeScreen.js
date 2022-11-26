@@ -7,12 +7,15 @@ import {
   FlatList,
   Image,
   Dimensions,
+  TouchableWithoutFeedback,
+  TouchableOpacity,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import {FlashList} from '@shopify/flash-list';
 import RNFS from 'react-native-fs';
+import FastImage from 'react-native-fast-image';
 
 const requestCameraPermission = async () => {
   try {
@@ -43,35 +46,7 @@ const HomeScreen = () => {
   const [link, setLink] = useState([]);
   const [searchData, setSearchData] = useState([]);
 
-  // console.log(link);
-
-  //RNFS TESTS
-  /* RNFS.readDir(RNFS.ExternalStorageDirectoryPath) // On Android, use "RNFS.DocumentDirectoryPath" (MainBundlePath is not defined)
-    .then(result => {
-      console.log('GOT RESULT', result);
-
-      // stat the first file
-      return Promise.all([RNFS.stat(result[0].path), result[0].path]);
-    })
-    .then(statResult => {
-      if (statResult[0].isFile()) {
-        // if we have a file, read it
-        return RNFS.readFile(statResult[1], 'utf8');
-      }
-
-      return 'no file';
-    })
-    .then(contents => {
-      // log the file contents
-      console.log(contents);
-    })
-    .catch(err => {
-      console.log(err.message, err.code);
-    }); */
-
-  // RNFS.readDir('/storage/emulated/0/Pictures/Screenshots');
-
-  //RNFS TESTS
+  console.log(searchData);
 
   async function getPermission() {
     try {
@@ -89,18 +64,24 @@ const HomeScreen = () => {
   }, []);
   async function getData() {
     const data = await CameraRoll.getPhotos({
-      first: 1,
+      first: 10,
       assetType: 'Photos',
-      include: ['filename'],
+      // include: ['filename'],
     });
     const uri = data.edges;
     let searchDataArray = [];
-    for (let i = 0; i < uri.length; i++) {
-      const tempUri = uri[i].node.image.uri;
-
-      const tst = await TextRecognition.recognize(tempUri);
-
-      searchDataArray.push({uri: uri[i].node.image.uri, data: tst.text, id: i});
+    if (searchData === []) {
+      for (let i = 0; i < uri.length; i++) {
+        if (uri[i].node.group_name === 'Screenshots') {
+          const tempUri = uri[i].node.image.uri;
+          const tst = await TextRecognition.recognize(tempUri);
+          searchDataArray.push({
+            uri: uri[i].node.image.uri,
+            data: tst.text,
+            id: i,
+          });
+        }
+      }
     }
 
     setSearchData(searchDataArray);
@@ -115,7 +96,9 @@ const HomeScreen = () => {
     const uri = data.edges;
     let tempArray = [];
     for (let i = 0; i < uri.length; i++) {
-      tempArray.push(uri[i]);
+      if (uri[i].node.group_name === 'Screenshots') {
+        tempArray.push(uri[i]);
+      }
     }
     setLink(tempArray);
   }
@@ -128,30 +111,33 @@ const HomeScreen = () => {
   const width = Dimensions.get('window').width;
   return (
     <View>
-      {/* <Text>HomeScreen</Text> */}
-      {/* <Button title="ocr" onPress={getPics} /> */}
       <View style={{width: width, height: 600, backgroundColor: 'white'}}>
-        <FlashList
-          data={link}
-          renderItem={item => {
-            const photo = item.item.node.image.uri;
-            console.log(photo)
-            // getText(photo);
-            return (
-              <>
-                {photo && (
-                  <Image
-                    source={{uri: photo}}
-                    style={{height: 300, width: width, resizeMode: 'contain'}}
-                    // blurRadius={10}
+        <View style={styles.root}>
+          <FlashList
+            data={link}
+            renderItem={item => {
+              var photo = item.item.node.image.uri;
+              return (
+                <View
+                  style={{
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: 300,
+                    // width: Dimensions.get('screen').width,
+                  }}>
+                  <FastImage
+                    source={{uri: photo, priority: FastImage.priority.normal}}
+                    style={{height: 300, width: 150}}
+                    resizeMode={FastImage.resizeMode.contain}
                   />
-                )}
-              </>
-            );
-          }}
-          key={new Date() + Math.random * 100}
-          estimatedItemSize={100}
-        />
+                </View>
+              );
+            }}
+            key={new Date() + Math.random}
+            numColumns={2}
+            estimatedItemSize={100}
+          />
+        </View>
       </View>
     </View>
   );
@@ -159,4 +145,10 @@ const HomeScreen = () => {
 
 export default HomeScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  root: {
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height,
+    backgroundColor: 'pink',
+  },
+});
