@@ -14,8 +14,9 @@ import React, {useEffect, useState} from 'react';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import {FlashList} from '@shopify/flash-list';
-import RNFS from 'react-native-fs';
+// import RNFS from 'react-native-fs';
 import FastImage from 'react-native-fast-image';
+// import {Searchbar} from 'react-native-paper';
 
 const requestCameraPermission = async () => {
   try {
@@ -105,9 +106,9 @@ const HomeScreen = () => {
 
   const onSearch = text => {
     let searchResults = [];
-    searchResults = data.filter(item => {
-      return item.toLowerCase().indexOf(text.toLowerCase()) > -1 ? 1 : -1;
-    });
+    // searchResults = data.filter(item => {
+    //   return item.toLowerCase().indexOf(text.toLowerCase()) > -1 ? 1 : -1;
+    // });
   };
 
   useEffect(() => {
@@ -141,6 +142,11 @@ const HomeScreen = () => {
             numColumns={2}
             estimatedItemSize={100}
           />
+          {/* <Searchbar
+            placeholder="Search"
+            onChangeText={onSearch}
+            value={'test'}
+          /> */}
         </View>
       </View>
     </View>
