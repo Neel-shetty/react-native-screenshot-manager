@@ -45,6 +45,7 @@ const requestCameraPermission = async () => {
 const HomeScreen = () => {
   const [link, setLink] = useState([]);
   const [searchData, setSearchData] = useState([]);
+  const [oldSearchData, setOldSearchData] = useState([]);
 
   console.log(searchData);
 
@@ -66,25 +67,24 @@ const HomeScreen = () => {
     const data = await CameraRoll.getPhotos({
       first: 10,
       assetType: 'Photos',
-      // include: ['filename'],
     });
     const uri = data.edges;
     let searchDataArray = [];
-    if (searchData === []) {
-      for (let i = 0; i < uri.length; i++) {
-        if (uri[i].node.group_name === 'Screenshots') {
-          const tempUri = uri[i].node.image.uri;
-          const tst = await TextRecognition.recognize(tempUri);
-          searchDataArray.push({
-            uri: uri[i].node.image.uri,
-            data: tst.text,
-            id: i,
-          });
-        }
+
+    for (let i = 0; i < uri.length; i++) {
+      if (uri[i].node.group_name === 'Screenshots') {
+        const tempUri = uri[i].node.image.uri;
+        const tst = await TextRecognition.recognize(tempUri);
+        searchDataArray.push({
+          uri: uri[i].node.image.uri,
+          data: tst.text,
+          id: i,
+        });
       }
     }
 
     setSearchData(searchDataArray);
+    setOldSearchData(searchDataArray);
   }
 
   async function showPics() {
@@ -103,33 +103,37 @@ const HomeScreen = () => {
     setLink(tempArray);
   }
 
+  const onSearch = text => {
+    let searchResults = [];
+    searchResults = data.filter(item => {
+      return item.toLowerCase().indexOf(text.toLowerCase()) > -1 ? 1 : -1;
+    });
+  };
+
   useEffect(() => {
     getData();
     showPics();
   }, []);
 
   const width = Dimensions.get('window').width;
+  const height = Dimensions.get('window').height;
   return (
     <View>
-      <View style={{width: width, height: 600, backgroundColor: 'white'}}>
-        <View style={styles.root}>
+      <View style={styles.root}>
+        <View style={styles.ListView}>
           <FlashList
             data={link}
             renderItem={item => {
               var photo = item.item.node.image.uri;
               return (
-                <View
-                  style={{
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    height: 300,
-                    // width: Dimensions.get('screen').width,
-                  }}>
-                  <FastImage
-                    source={{uri: photo, priority: FastImage.priority.normal}}
-                    style={{height: 300, width: 150}}
-                    resizeMode={FastImage.resizeMode.contain}
-                  />
+                <View style={styles.itemView}>
+                  <TouchableOpacity>
+                    <FastImage
+                      source={{uri: photo, priority: FastImage.priority.normal}}
+                      style={styles.image}
+                      resizeMode={FastImage.resizeMode.contain}
+                    />
+                  </TouchableOpacity>
                 </View>
               );
             }}
@@ -145,10 +149,29 @@ const HomeScreen = () => {
 
 export default HomeScreen;
 
+const width = Dimensions.get('window').width;
+const height = Dimensions.get('window').height;
+
 const styles = StyleSheet.create({
+  ListView: {
+    width: width,
+    height: height,
+    backgroundColor: 'white',
+  },
+  itemView: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  image: {
+    height: 350,
+    width: Dimensions.get('window').width / 2,
+  },
   root: {
-    width: Dimensions.get('window').width,
-    height: Dimensions.get('window').height,
-    backgroundColor: 'pink',
+    width: width,
+    height: height,
+    backgroundColor: 'white',
   },
 });
