@@ -40,7 +40,9 @@ const requestCameraPermission = async () => {
 
 const HomeScreen = () => {
   const [link, setLink] = useState([]);
+  const [searchData, setSearchData] = useState([]);
   // console.log('linkk --- - - - -', link)
+  console.log('searchData ---------------', searchData);
   async function getPermission() {
     try {
       PermissionsAndroid.request(
@@ -64,16 +66,23 @@ const HomeScreen = () => {
     // console.log('data - ', data);
     const uri = data.edges;
     // setLink(uri);
-    console.log('uri -- ', uri[0]);
+    // console.log('uri -- ', uri[0]);
     let tempArray = [];
+    let searchDataArray = [];
     for (let i = 0; i < uri.length; i++) {
       tempArray.push(uri[i]);
-      console.log(uri[i].node.image.uri);
+      // console.log(uri[i].node.image.uri);
       const tempUri = uri[i].node.image.uri;
-      getText(tempUri);
+      // let textData;
+      const tst = await TextRecognition.recognize(tempUri);
+      // await getText(tempUri);
+      // console.log(tst.text);
+      searchDataArray.push({uri: uri[i].node.image.uri, data: tst.text, id: i});
+      // console.log(searchDataArray);
     }
     // console.log('temp arr -- - - --', tempArray);
     setLink(tempArray);
+    setSearchData(searchDataArray);
   }
 
   useEffect(() => {
@@ -83,9 +92,9 @@ const HomeScreen = () => {
   async function getText(pic) {
     // console.log('passed uri - ', pic);
     // const result = await TextRecognition.recognize(pic);
-    TextRecognition.recognize(pic).then(val => {
-      console.log(val.text);
-    });
+    const txt = await TextRecognition.recognize(pic);
+    // console.log('txt = ', txt);
+    return txt;
   }
 
   const width = Dimensions.get('window').width;
@@ -93,7 +102,7 @@ const HomeScreen = () => {
     <View>
       {/* <Text>HomeScreen</Text> */}
       {/* <Button title="ocr" onPress={getPics} /> */}
-      <View style={{width: width, height: 600}}>
+      <View style={{width: width, height: 600, backgroundColor: 'white'}}>
         <FlashList
           data={link}
           renderItem={item => {
@@ -104,7 +113,7 @@ const HomeScreen = () => {
                 {photo && (
                   <Image
                     source={{uri: photo}}
-                    style={{height: 300, width: width, resizeMode:'contain'}}
+                    style={{height: 300, width: width, resizeMode: 'contain'}}
                     // blurRadius={10}
                   />
                 )}
