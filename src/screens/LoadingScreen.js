@@ -23,7 +23,13 @@ const LoadingScreen = ({navigation}) => {
     navigation.navigate('Home');
   }
   return (
-    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+    <View
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        // backgroundColor: 'blue',
+      }}>
       <Text>LoadingScreen</Text>
     </View>
   );

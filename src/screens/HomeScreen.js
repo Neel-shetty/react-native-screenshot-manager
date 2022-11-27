@@ -10,6 +10,7 @@ import {
   TouchableWithoutFeedback,
   TouchableOpacity,
   ActivityIndicator,
+  StatusBar,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
@@ -19,7 +20,7 @@ import {FlashList} from '@shopify/flash-list';
 import FastImage from 'react-native-fast-image';
 import SearchBar from '../components/HomeScreenComponents/SearchBar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-// import * as Progress from 'react-native-progress';
+import * as Progress from 'react-native-progress';
 
 const requestCameraPermission = async () => {
   try {
@@ -55,7 +56,7 @@ const HomeScreen = ({navigation}) => {
   const [progress, setProgress] = useState(0);
   const [imagesLength, setImagesLength] = useState(0);
 
-  console.log('offline data --- ', offlineSearchData);
+  // console.log('offline data --- ', offlineSearchData);
 
   async function temp() {
     await AsyncStorage.removeItem('searchData');
@@ -63,10 +64,6 @@ const HomeScreen = ({navigation}) => {
   }
 
   // temp()
-
-  function PhotoButton() {
-    navigation.navigate('PhotoScreen');
-  }
 
   async function getPermission() {
     try {
@@ -86,25 +83,31 @@ const HomeScreen = ({navigation}) => {
 
   async function getData() {
     const readJsonData = await AsyncStorage.getItem('searchData');
-    console.log(JSON.parse(readJsonData));
+    // console.log(JSON.parse(readJsonData));;;
     if (readJsonData !== null) {
       setLoading(false);
-      console.log(JSON.parse(readJsonData));
+      // console.log(JSON.parse(readJsonData));
       setOfflineSearchData(JSON.parse(readJsonData));
       setLink(JSON.parse(readJsonData));
       setSearchData(JSON.parse(readJsonData));
       setOldSearchData(JSON.parse(readJsonData));
     } else if (readJsonData === null) {
       setLoading(true);
-      const data = await CameraRoll.getPhotos({
+      let data = await CameraRoll.getPhotos({
         first: 10,
         assetType: 'Photos',
       });
+      data = await CameraRoll.getPhotos({
+        first: data.edges.length,
+        assetType: 'Photos',
+      });
       const uri = data.edges;
+      console.log('present log -------------------------', data.page_info);
       let searchDataArray = [];
-      console.log('uri -- ', data);
+      // console.log('uri -- ', data);
       let idnum = 0;
       for (let i = 0; i < uri.length; i++) {
+        console.log('--------------------------------', uri[i].node.group_name);
         if (uri[i].node.group_name === 'Screenshots') {
           const tempUri = uri[i].node.image.uri;
           const tst = await TextRecognition.recognize(tempUri);
@@ -120,6 +123,9 @@ const HomeScreen = ({navigation}) => {
         console.log(`reading image ${i}/${uri.length}`);
       }
       // console.log(searchDataArray);
+      if (searchDataArray === []) {
+        setSearchData([null]);
+      }
       setLink(searchDataArray);
       setSearchData(searchDataArray);
       setOldSearchData(searchDataArray);
@@ -163,13 +169,23 @@ const HomeScreen = ({navigation}) => {
 
   if (loading) {
     return (
-      <View style={{alignItems: 'center', justifyContent: 'center', flex: 1}}>
+      <View
+        style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          flex: 1,
+          backgroundColor: 'lightblue',
+        }}>
         <Text style={{fontSize: 20, textAlign: 'center'}}>
           Please wait while we make your Screenshots searchable
         </Text>
         <Text style={{textAlign: 'center'}}>
           Processing {progress} of {imagesLength} images
         </Text>
+        <Progress.Bar
+          progress={progress / 10}
+          width={Dimensions.get('window').width * 0.8}
+        />
       </View>
     );
   }
@@ -177,6 +193,11 @@ const HomeScreen = ({navigation}) => {
   return (
     <View>
       <View style={styles.root}>
+        <StatusBar
+          animated={true}
+          backgroundColor={'transparent'}
+          barStyle={'dark-content'}
+        />
         <SearchBar onChangeText={txt => onSearch(txt)} />
         <View style={styles.ListView}>
           <FlashList
@@ -184,6 +205,9 @@ const HomeScreen = ({navigation}) => {
             renderItem={item => {
               // console.log(item.item.uri);
               var photo = item.item?.uri;
+              function PhotoButton() {
+                navigation.navigate('PhotoScreen', {uri: photo});
+              }
               return (
                 <View style={styles.itemView}>
                   <TouchableOpacity onPress={PhotoButton}>

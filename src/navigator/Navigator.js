@@ -16,8 +16,16 @@ const Navigator = () => {
           component={HomeScreen}
           options={{headerShown: false}}
         />
-        <Stack.Screen name="PhotoScreen" component={PhotoScreen} />
-        <Stack.Screen name="LoadingScreen" component={LoadingScreen} />
+        <Stack.Screen
+          name="PhotoScreen"
+          component={PhotoScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="LoadingScreen"
+          component={LoadingScreen}
+          options={{headerShown: false}}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
