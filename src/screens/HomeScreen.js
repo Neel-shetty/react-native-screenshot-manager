@@ -94,7 +94,7 @@ const HomeScreen = ({navigation}) => {
     } else if (readJsonData === null) {
       setLoading(true);
       let data = await CameraRoll.getPhotos({
-        first: 10,
+        first: 1000,
         assetType: 'Photos',
       });
       data = await CameraRoll.getPhotos({
@@ -183,7 +183,7 @@ const HomeScreen = ({navigation}) => {
           Processing {progress} of {imagesLength} images
         </Text>
         <Progress.Bar
-          progress={progress / 10}
+          progress={progress / 1000}
           width={Dimensions.get('window').width * 0.8}
         />
       </View>
