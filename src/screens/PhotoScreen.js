@@ -7,22 +7,27 @@ import {
   StatusBar,
   Dimensions,
   Platform,
+  TouchableOpacity,
 } from 'react-native';
 import React from 'react';
-import Header from '../components/PhotoScreenComponents/header';
+// import Header from '../components/PhotoScreenComponents/header';
 import Share from 'react-native-share';
+import {Ionicons} from '@expo/vector-icons';
 
-const PhotoScreen = props => {
+const PhotoScreen = (props, {navigation}) => {
   const link = props.route.params.uri;
   console.log(link);
 
   async function shareButton() {
     const options = {
-      message: 'test',
       url: link,
     };
     const shareResponse = await Share.open(options);
     console.log(JSON.stringify(shareResponse));
+  }
+
+  function backButton() {
+    props.navigation.navigate('Home');
   }
 
   return (
@@ -38,13 +43,34 @@ const PhotoScreen = props => {
           resizeMode="cover"
           style={styles.image}>
           <View style={styles.headerComponent}>
-            <Text>Back</Text>
-            <Text>Header</Text>
-            <Text>dots</Text>
+            <TouchableOpacity onPress={backButton}>
+              <View
+                style={{
+                  backgroundColor: 'black',
+                  borderRadius: 40 / 2,
+                  height: 40,
+                  width: 40,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Ionicons name="arrow-back" size={30} color="white" />
+              </View>
+            </TouchableOpacity>
           </View>
           <View style={styles.bottomContainer}>
-            <Text onPress={shareButton}>TEST</Text>
-            <Text>TEST2</Text>
+            <TouchableOpacity onPress={shareButton}>
+              <View
+                style={{
+                  backgroundColor: 'black',
+                  borderRadius: 40 / 2,
+                  height: 40,
+                  width: 40,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Ionicons name="share-social" size={30} color="white" />
+              </View>
+            </TouchableOpacity>
           </View>
           {/* <Text style={styles.text}>test</Text> */}
         </ImageBackground>
@@ -90,7 +116,7 @@ const styles = StyleSheet.create({
     flex: 1,
     // top: 200,
     alignItems: 'flex-end',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     flexDirection: 'row',
     paddingBottom: 50,
     paddingHorizontal: 40,

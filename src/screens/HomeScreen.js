@@ -4,10 +4,7 @@ import {
   Text,
   View,
   PermissionsAndroid,
-  FlatList,
-  Image,
   Dimensions,
-  TouchableWithoutFeedback,
   TouchableOpacity,
   ActivityIndicator,
   StatusBar,
@@ -21,6 +18,7 @@ import FastImage from 'react-native-fast-image';
 import SearchBar from '../components/HomeScreenComponents/SearchBar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Progress from 'react-native-progress';
+import {Ionicons} from '@expo/vector-icons';
 
 const requestCameraPermission = async () => {
   try {
@@ -62,7 +60,7 @@ const HomeScreen = ({navigation}) => {
     await AsyncStorage.removeItem('searchData');
     console.log('deleted');
   }
-
+  // console.log(Constants.systemFonts);
   // temp()
 
   async function getPermission() {
@@ -174,12 +172,23 @@ const HomeScreen = ({navigation}) => {
           alignItems: 'center',
           justifyContent: 'center',
           flex: 1,
-          backgroundColor: 'lightblue',
+          backgroundColor: 'white',
         }}>
-        <Text style={{fontSize: 20, textAlign: 'center'}}>
+        <Text
+          style={{
+            fontSize: 20,
+            textAlign: 'center',
+            color: 'black',
+            paddingVertical: 10,
+            paddingHorizontal: 20,
+          }}>
           Please wait while we make your Screenshots searchable
         </Text>
-        <Text style={{textAlign: 'center'}}>
+        <Text
+          style={{textAlign: 'center', paddingTop: 10, paddingHorizontal: 20}}>
+          This step only happens when you open the app for the first time
+        </Text>
+        <Text style={{textAlign: 'center', padding: 5, paddingHorizontal: 20}}>
           Processing {progress} of {imagesLength} images
         </Text>
         <Progress.Bar
@@ -198,7 +207,9 @@ const HomeScreen = ({navigation}) => {
           backgroundColor={'transparent'}
           barStyle={'dark-content'}
         />
-        <SearchBar onChangeText={txt => onSearch(txt)} />
+        <View style={{alignItems: 'center'}}>
+          <SearchBar onChangeText={txt => onSearch(txt)} />
+        </View>
         <View style={styles.ListView}>
           <FlashList
             data={link}
@@ -224,11 +235,6 @@ const HomeScreen = ({navigation}) => {
             numColumns={2}
             estimatedItemSize={100}
           />
-          {/* <Searchbar
-            placeholder="Search"
-            onChangeText={onSearch}
-            value={'test'}
-          /> */}
         </View>
       </View>
     </View>
@@ -250,10 +256,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
-    borderRadius: 10,
+    // borderRadius: 10,
     overflow: 'hidden',
-    paddingHorizontal: 5,
+    // paddingHorizontal: 5,
     alignSelf: 'center',
+    borderRightWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: 'lightgrey',
   },
   image: {
     height: 320,
