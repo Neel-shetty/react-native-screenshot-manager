@@ -9,6 +9,7 @@ import {
   Dimensions,
   TouchableWithoutFeedback,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
@@ -43,12 +44,16 @@ const requestCameraPermission = async () => {
   }
 };
 
-const HomeScreen = () => {
-  const [link, setLink] = useState([]);
-  const [searchData, setSearchData] = useState([]);
-  const [oldSearchData, setOldSearchData] = useState([]);
+const HomeScreen = ({navigation}) => {
+  const [link, setLink] = useState([null]);
+  const [searchData, setSearchData] = useState([null]);
+  const [oldSearchData, setOldSearchData] = useState([null]);
 
-  // console.log(searchData);
+  console.log(searchData.length);
+
+  function PhotoButton() {
+    navigation.navigate('PhotoScreen');
+  }
 
   async function getPermission() {
     try {
@@ -72,16 +77,19 @@ const HomeScreen = () => {
     const uri = data.edges;
     let searchDataArray = [];
 
+    let idnum = 0;
     for (let i = 0; i < uri.length; i++) {
       if (uri[i].node.group_name === 'Screenshots') {
         const tempUri = uri[i].node.image.uri;
         const tst = await TextRecognition.recognize(tempUri);
+        idnum = idnum + 1;
         searchDataArray.push({
           uri: uri[i].node.image.uri,
           data: tst.text,
-          id: i,
+          id: idnum,
         });
       }
+      console.log(`reading image ${i}/${uri.length}`);
     }
     setLink(searchDataArray);
     setSearchData(searchDataArray);
@@ -123,9 +131,26 @@ const HomeScreen = () => {
   };
 
   useEffect(() => {
-    getData();
+    if (searchData.length === 1) {
+      console.log('getting data');
+      getData();
+    } else {
+      console.log('returning//');
+      return;
+    }
     // showPics();
-  }, []);
+  }, [searchData]);
+
+  if (searchData.length === 1) {
+    return (
+      <View style={{alignItems: 'center', justifyContent: 'center', flex: 1}}>
+        <Text style={{fontSize: 30}}>
+          Please wait while we make your Screenshots searchable
+        </Text>
+        <ActivityIndicator />
+      </View>
+    );
+  }
 
   return (
     <View>
@@ -136,10 +161,10 @@ const HomeScreen = () => {
             data={link}
             renderItem={item => {
               // console.log(item.item.uri);
-              var photo = item.item.uri;
+              var photo = item.item?.uri;
               return (
                 <View style={styles.itemView}>
-                  <TouchableOpacity>
+                  <TouchableOpacity onPress={PhotoButton}>
                     <FastImage
                       source={{uri: photo, priority: FastImage.priority.normal}}
                       style={styles.image}
@@ -181,10 +206,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
     overflow: 'hidden',
+    paddingHorizontal: 5,
+    alignSelf: 'center',
   },
   image: {
-    height: 350,
+    height: 320,
     width: Dimensions.get('window').width / 2,
+    alignSelf: 'center',
   },
   root: {
     width: width,

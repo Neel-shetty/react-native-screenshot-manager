@@ -17,7 +17,7 @@ const SearchBar = ({onChangeText, placeholder = 'Search', value}) => {
         value={value}
         style={styles.input}
       />
-      <Button>ok</Button>
+      <Button title="ok"></Button>
     </View>
   );
 };
@@ -31,10 +31,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'center',
     justifyContent: 'center',
-    backgroundColor: 'violet',
+    backgroundColor: 'lightblue',
     borderRadius: 8,
+    flexDirection: 'row',
   },
   input: {
     width: Dimensions.get('window').width * 0.8,
+    paddingLeft: 10,
   },
 });
