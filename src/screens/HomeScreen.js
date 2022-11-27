@@ -18,6 +18,8 @@ import {FlashList} from '@shopify/flash-list';
 // import RNFS from 'react-native-fs';
 import FastImage from 'react-native-fast-image';
 import SearchBar from '../components/HomeScreenComponents/SearchBar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+// import * as Progress from 'react-native-progress';
 
 const requestCameraPermission = async () => {
   try {
@@ -48,8 +50,19 @@ const HomeScreen = ({navigation}) => {
   const [link, setLink] = useState([null]);
   const [searchData, setSearchData] = useState([null]);
   const [oldSearchData, setOldSearchData] = useState([null]);
+  const [offlineSearchData, setOfflineSearchData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [imagesLength, setImagesLength] = useState(0);
 
-  console.log(searchData.length);
+  console.log('offline data --- ', offlineSearchData);
+
+  async function temp() {
+    await AsyncStorage.removeItem('searchData');
+    console.log('deleted');
+  }
+
+  // temp()
 
   function PhotoButton() {
     navigation.navigate('PhotoScreen');
@@ -65,52 +78,57 @@ const HomeScreen = ({navigation}) => {
       console.log(e);
     }
   }
+
   useEffect(() => {
     // requestCameraPermission();
     // getPermission();
   }, []);
+
   async function getData() {
-    const data = await CameraRoll.getPhotos({
-      first: 10,
-      assetType: 'Photos',
-    });
-    const uri = data.edges;
-    let searchDataArray = [];
-
-    let idnum = 0;
-    for (let i = 0; i < uri.length; i++) {
-      if (uri[i].node.group_name === 'Screenshots') {
-        const tempUri = uri[i].node.image.uri;
-        const tst = await TextRecognition.recognize(tempUri);
-        idnum = idnum + 1;
-        searchDataArray.push({
-          uri: uri[i].node.image.uri,
-          data: tst.text,
-          id: idnum,
-        });
+    const readJsonData = await AsyncStorage.getItem('searchData');
+    console.log(JSON.parse(readJsonData));
+    if (readJsonData !== null) {
+      setLoading(false);
+      console.log(JSON.parse(readJsonData));
+      setOfflineSearchData(JSON.parse(readJsonData));
+      setLink(JSON.parse(readJsonData));
+      setSearchData(JSON.parse(readJsonData));
+      setOldSearchData(JSON.parse(readJsonData));
+    } else if (readJsonData === null) {
+      setLoading(true);
+      const data = await CameraRoll.getPhotos({
+        first: 10,
+        assetType: 'Photos',
+      });
+      const uri = data.edges;
+      let searchDataArray = [];
+      console.log('uri -- ', data);
+      let idnum = 0;
+      for (let i = 0; i < uri.length; i++) {
+        if (uri[i].node.group_name === 'Screenshots') {
+          const tempUri = uri[i].node.image.uri;
+          const tst = await TextRecognition.recognize(tempUri);
+          idnum = idnum + 1;
+          searchDataArray.push({
+            uri: uri[i].node.image.uri,
+            data: tst.text,
+            id: idnum,
+          });
+        }
+        setProgress(i);
+        setImagesLength(uri.length);
+        console.log(`reading image ${i}/${uri.length}`);
       }
-      console.log(`reading image ${i}/${uri.length}`);
+      // console.log(searchDataArray);
+      setLink(searchDataArray);
+      setSearchData(searchDataArray);
+      setOldSearchData(searchDataArray);
+      setOfflineSearchData(searchDataArray);
+      const jsonData = JSON.stringify(searchDataArray);
+      await AsyncStorage.setItem('searchData', jsonData);
+      console.log('photos indexed');
+      setLoading(false);
     }
-    setLink(searchDataArray);
-    setSearchData(searchDataArray);
-    setOldSearchData(searchDataArray);
-    console.log('photos indexed');
-  }
-
-  async function showPics() {
-    const data = await CameraRoll.getPhotos({
-      first: 100,
-      assetType: 'Photos',
-      include: ['filename'],
-    });
-    const uri = data.edges;
-    let tempArray = [];
-    for (let i = 0; i < uri.length; i++) {
-      if (uri[i].node.group_name === 'Screenshots') {
-        tempArray.push(uri[i]);
-      }
-    }
-    setLink(tempArray);
   }
 
   const onSearch = text => {
@@ -131,23 +149,27 @@ const HomeScreen = ({navigation}) => {
   };
 
   useEffect(() => {
-    if (searchData.length === 1) {
-      console.log('getting data');
+    async function idk() {
+      // if ((await AsyncStorage.getItem('searchData')) === null) {
+      //   console.log('getting data');
       getData();
-    } else {
-      console.log('returning//');
-      return;
+      // } else {
+      //   console.log('returning//');
+      //   return;
+      // }
     }
-    // showPics();
-  }, [searchData]);
+    idk();
+  }, []);
 
-  if (searchData.length === 1) {
+  if (loading) {
     return (
       <View style={{alignItems: 'center', justifyContent: 'center', flex: 1}}>
-        <Text style={{fontSize: 30}}>
+        <Text style={{fontSize: 20, textAlign: 'center'}}>
           Please wait while we make your Screenshots searchable
         </Text>
-        <ActivityIndicator />
+        <Text style={{textAlign: 'center'}}>
+          Processing {progress} of {imagesLength} images
+        </Text>
       </View>
     );
   }
