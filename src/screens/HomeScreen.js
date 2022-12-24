@@ -202,7 +202,7 @@ const HomeScreen = ({navigation}) => {
           Processing {progress} of {imagesLength} images
         </Text>
         <Progress.Bar
-          progress={progress / 1000}
+          progress={progress / imagesLength}
           width={Dimensions.get('window').width * 0.8}
         />
       </View>
