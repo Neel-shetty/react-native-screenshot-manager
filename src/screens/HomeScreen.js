@@ -15,12 +15,9 @@ import React, {useEffect, useState} from 'react';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import {FlashList} from '@shopify/flash-list';
-// import RNFS from 'react-native-fs';
 import FastImage from 'react-native-fast-image';
 import SearchBar from '../components/HomeScreenComponents/SearchBar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Progress from 'react-native-progress';
-import {Ionicons} from '@expo/vector-icons';
 
 const HomeScreen = ({navigation}) => {
   const [link, setLink] = useState([null]);
@@ -34,14 +31,6 @@ const HomeScreen = ({navigation}) => {
 
   useEffect(() => {
     const backAction = () => {
-      // Alert.alert('Hold on!', 'Are you sure you want to leave the app?', [
-      //   {
-      //     text: 'Cancel',
-      //     onPress: () => null,
-      //     style: 'cancel',
-      //   },
-      //   {text: 'YES', onPress: () => BackHandler.exitApp()},
-      // ]);
       navigation.navigate('Home');
       return true;
     };
@@ -73,11 +62,6 @@ const HomeScreen = ({navigation}) => {
       console.log(e);
     }
   }
-
-  useEffect(() => {
-    // requestCameraPermission();
-    // getPermission();
-  }, []);
 
   async function getData() {
     const readJsonData = await AsyncStorage.getItem('searchData');
@@ -147,29 +131,16 @@ const HomeScreen = ({navigation}) => {
           return item.uri;
         }
       });
-      // setSearchData(searchResults);
       setLink(searchResults);
     }
   };
 
   useEffect(() => {
     async function idk() {
-      // if ((await AsyncStorage.getItem('searchData')) === null) {
-      //   console.log('getting data');
       getData();
-      // } else {
-      //   console.log('returning//');
-      //   return;
-      // }
     }
     idk();
-    calculateProgress();
   }, []);
-
-  function calculateProgress() {
-    const idk = progress / imagesLength;
-    SetProgressBarLength(idk);
-  }
 
   if (loading) {
     return (
@@ -208,10 +179,6 @@ const HomeScreen = ({navigation}) => {
           }}>
           Processing {progress} of {imagesLength} images
         </Text>
-        {/* <Progress.Bar
-          progress={progressBarLength / 1000}
-          width={Dimensions.get('window').width * 0.8}
-        /> */}
       </View>
     );
   }
@@ -219,12 +186,7 @@ const HomeScreen = ({navigation}) => {
   return (
     <View>
       <View style={styles.root}>
-        <StatusBar
-          // animated={true}
-          // backgroundColor={'transparent'}
-          // barStyle={'dark-content'}
-          hidden
-        />
+        <StatusBar hidden />
         <View style={{alignItems: 'center', paddingTop: 10}}>
           <SearchBar onChangeText={txt => onSearch(txt)} />
         </View>
@@ -274,9 +236,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
-    // borderRadius: 10,
     overflow: 'hidden',
-    // paddingHorizontal: 5,
     alignSelf: 'center',
     borderRightWidth: 1,
     borderBottomWidth: 1,
