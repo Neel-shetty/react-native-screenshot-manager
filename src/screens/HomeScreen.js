@@ -30,6 +30,7 @@ const HomeScreen = ({navigation}) => {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [imagesLength, setImagesLength] = useState(0);
+  const [progressBarLength, SetProgressBarLength] = useState(0);
 
   useEffect(() => {
     const backAction = () => {
@@ -162,7 +163,13 @@ const HomeScreen = ({navigation}) => {
       // }
     }
     idk();
+    calculateProgress();
   }, []);
+
+  function calculateProgress() {
+    const idk = progress / imagesLength;
+    SetProgressBarLength(idk);
+  }
 
   if (loading) {
     return (
@@ -201,10 +208,10 @@ const HomeScreen = ({navigation}) => {
           }}>
           Processing {progress} of {imagesLength} images
         </Text>
-        <Progress.Bar
-          progress={progress / imagesLength}
+        {/* <Progress.Bar
+          progress={progressBarLength / 1000}
           width={Dimensions.get('window').width * 0.8}
-        />
+        /> */}
       </View>
     );
   }
