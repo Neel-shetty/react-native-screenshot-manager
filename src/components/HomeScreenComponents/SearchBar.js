@@ -66,5 +66,6 @@ const styles = StyleSheet.create({
   },
   input: {
     width: width * 0.7,
+    color: 'black',
   },
 });

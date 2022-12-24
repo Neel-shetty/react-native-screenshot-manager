@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StatusBar,
+  BackHandler,
+  Alert,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
@@ -20,31 +22,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Progress from 'react-native-progress';
 import {Ionicons} from '@expo/vector-icons';
 
-const requestCameraPermission = async () => {
-  try {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-      {
-        title: 'Cool Photo App Camera Permission',
-        message:
-          'Cool Photo App needs access to your camera ' +
-          'so you can take awesome pictures.',
-        buttonNeutral: 'Ask Me Later',
-        buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
-      },
-    );
-    console.log(granted);
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      console.log('You can use the camera');
-    } else {
-      console.log('Camera permission denied');
-    }
-  } catch (err) {
-    console.warn(err);
-  }
-};
-
 const HomeScreen = ({navigation}) => {
   const [link, setLink] = useState([null]);
   const [searchData, setSearchData] = useState([null]);
@@ -53,6 +30,28 @@ const HomeScreen = ({navigation}) => {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [imagesLength, setImagesLength] = useState(0);
+
+  useEffect(() => {
+    const backAction = () => {
+      // Alert.alert('Hold on!', 'Are you sure you want to leave the app?', [
+      //   {
+      //     text: 'Cancel',
+      //     onPress: () => null,
+      //     style: 'cancel',
+      //   },
+      //   {text: 'YES', onPress: () => BackHandler.exitApp()},
+      // ]);
+      navigation.navigate('Home');
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction,
+    );
+
+    return () => backHandler.remove();
+  }, [navigation]);
 
   // console.log('offline data --- ', offlineSearchData);
 
@@ -92,7 +91,7 @@ const HomeScreen = ({navigation}) => {
     } else if (readJsonData === null) {
       setLoading(true);
       let data = await CameraRoll.getPhotos({
-        first: 1000,
+        first: 50000,
         assetType: 'Photos',
       });
       data = await CameraRoll.getPhotos({
@@ -185,10 +184,21 @@ const HomeScreen = ({navigation}) => {
           Please wait while we make your Screenshots searchable
         </Text>
         <Text
-          style={{textAlign: 'center', paddingTop: 10, paddingHorizontal: 20}}>
+          style={{
+            textAlign: 'center',
+            paddingTop: 10,
+            color: 'black',
+            paddingHorizontal: 20,
+          }}>
           This step only happens when you open the app for the first time
         </Text>
-        <Text style={{textAlign: 'center', padding: 5, paddingHorizontal: 20}}>
+        <Text
+          style={{
+            textAlign: 'center',
+            padding: 5,
+            color: 'black',
+            paddingHorizontal: 20,
+          }}>
           Processing {progress} of {imagesLength} images
         </Text>
         <Progress.Bar
@@ -203,11 +213,12 @@ const HomeScreen = ({navigation}) => {
     <View>
       <View style={styles.root}>
         <StatusBar
-          animated={true}
-          backgroundColor={'transparent'}
-          barStyle={'dark-content'}
+          // animated={true}
+          // backgroundColor={'transparent'}
+          // barStyle={'dark-content'}
+          hidden
         />
-        <View style={{alignItems: 'center'}}>
+        <View style={{alignItems: 'center', paddingTop: 10}}>
           <SearchBar onChangeText={txt => onSearch(txt)} />
         </View>
         <View style={styles.ListView}>
